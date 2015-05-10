@@ -770,11 +770,12 @@ public class SwipeLayout extends FrameLayout {
         }
     }
 
+    private boolean mHasBeenDragged;
     private boolean mIsBeingDragged;
     private void checkCanDrag(MotionEvent ev){
         if(mIsBeingDragged) return;
         if(getOpenStatus()==Status.Middle){
-            mIsBeingDragged = true;
+            mHasBeenDragged = mIsBeingDragged = true;
             return;
         }
         Status status = getOpenStatus();
@@ -841,7 +842,7 @@ public class SwipeLayout extends FrameLayout {
                 doNothing = true;
             }
         }
-        mIsBeingDragged = !doNothing;
+        mHasBeenDragged = mIsBeingDragged = !doNothing;
     }
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -860,12 +861,12 @@ public class SwipeLayout extends FrameLayout {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mDragHelper.processTouchEvent(ev);
-                mIsBeingDragged = false;
+                mHasBeenDragged = mIsBeingDragged = false;
                 sX = ev.getRawX();
                 sY = ev.getRawY();
                 //if the swipe is in middle state(scrolling), should intercept the touch
                 if(getOpenStatus() == Status.Middle){
-                    mIsBeingDragged = true;
+                    mHasBeenDragged = mIsBeingDragged = true;
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -886,6 +887,7 @@ public class SwipeLayout extends FrameLayout {
 
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
+                // mHasBeenDragged intentionally left alone, so it can be checked in click events
                 mIsBeingDragged = false;
                 mDragHelper.processTouchEvent(ev);
                 break;
@@ -922,6 +924,7 @@ public class SwipeLayout extends FrameLayout {
             }
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                // mHasBeenDragged intentionally left alone, so it can be checked in click events
                 mIsBeingDragged = false;
                 mDragHelper.processTouchEvent(event);
                 break;
@@ -1000,7 +1003,7 @@ public class SwipeLayout extends FrameLayout {
     }
 
     private void performAdapterViewItemClick() {
-        if(getOpenStatus()!= Status.Close) return;
+        if(getOpenStatus()!= Status.Close || mHasBeenDragged) return;
         ViewParent t = getParent();
         if (t instanceof AdapterView) {
             AdapterView view = (AdapterView) t;
@@ -1012,7 +1015,7 @@ public class SwipeLayout extends FrameLayout {
         }
     }
     private boolean performAdapterViewItemLongClick() {
-        if(getOpenStatus()!= Status.Close) return false;
+        if(getOpenStatus()!= Status.Close || mHasBeenDragged) return false;
         ViewParent t = getParent();
         if (t instanceof AdapterView) {
             AdapterView view = (AdapterView) t;
