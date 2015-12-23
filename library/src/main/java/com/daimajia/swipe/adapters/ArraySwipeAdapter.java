@@ -49,8 +49,16 @@ public abstract class ArraySwipeAdapter<T> extends ArrayAdapter implements Swipe
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View v = super.getView(position, convertView, parent);
-        mItemManger.bind(v, position);
+        bind(position, v);
         return v;
+    }
+
+    /**
+     *  Just for the case if you don't call super.getView(), because you don't want the adapter to create view for you
+     *  you'll need to tell the adapter what view you have created
+     * */
+    protected void bind(int position, View v) {
+        mItemManger.bind(v, position);
     }
 
     @Override
